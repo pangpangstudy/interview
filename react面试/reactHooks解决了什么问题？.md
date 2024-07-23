@@ -29,3 +29,16 @@ react 16.8 class 组件 function 组件
 useEffect 生命周期 hook
 useMemo 缓存函数执行结果
 useState
+
+# 实现细节
+
+在实际的 React 实现中，管理 Hooks 状态和上下文是通过 Fiber 架构完成的。以下是一些关键概念：
+
+Fiber：
+Fiber 是 React 用来管理组件树的单元。每个 Fiber 对象表示组件树中的一个节点，包含了组件的状态、更新队列等信息。
+
+Hook 链表：
+每个 Fiber 对象都有一个 Hook 链表，用于存储组件的所有 Hook 状态。每次渲染时，React 会遍历这个链表来读取和更新 Hook 状态。
+
+全局指针：
+在函数组件渲染期间，React 使用全局指针（如 currentHook）来指向当前处理的 Hook。每次调用 Hook 时，这个指针会递增，以确保按顺序处理每个 Hook。
