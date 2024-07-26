@@ -49,7 +49,12 @@ export default withPWA({
   "name": "Your Name",
   "description": "Your description",
   "homepage_url": "https://pancakeswap.finance",
+  // start_url 定义了当用户从设备上的主屏幕图标启动 PWA 时，加载的初始 URL。. 表示相对于 manifest.json 文件的位置，因此通常表示应用的根目录。可以设为具体页面路径，如 /index.html 或 /home，根据需要调整。
   "start_url": ".",
+  // fullscreen：全屏显示，覆盖整个屏幕，不显示浏览器 UI。
+  // standalone：独立显示，类似于本地应用，隐藏浏览器 UI，但保留系统状态栏。
+  // minimal-ui：最小化的 UI，类似于 standalone，但带有最小的浏览器控件，如后退按钮。
+  // browser：常规浏览器模式，显示完整的浏览器 UI。
   "display": "standalone",
   "theme_color": "#1FC7D4",
   "background_color": "#ffffff",
