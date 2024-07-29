@@ -5,30 +5,30 @@ pragma solidity 0.8.12;
 /// @notice 聚合多个函数调用的结果
 /// @dev 向后兼容 Multicall 和 Multicall2
 /// @dev 聚合方法被标记为 `payable` 以便每次调用节省 24 gas
-/// @author Michael Elliot <mike@makerdao.com>
-/// @author Joshua Levine <joshua@makerdao.com>
-/// @author Nick Johnson <arachnid@notdot.net>
-/// @author Andreas Bigger <andreas@nascent.xyz>
-/// @author Matt Solomon <matt@mattsolomon.dev>
 contract Multicall3 {
+    // 调用的数据结构
     struct Call {
+        // 目标合约地址
         address target;
+        // callData
         bytes callData;
     }
 
     struct Call3 {
         address target;
+        // 是否允许失败
         bool allowFailure;
         bytes callData;
     }
-
+    // // 包含以太币传递和额外参数的调用结构
     struct Call3Value {
         address target;
         bool allowFailure;
+        // // 调用时传递的以太币数量
         uint256 value;
         bytes callData;
     }
-
+    // 调用结果的结构
     struct Result {
         bool success;
         bytes returnData;
@@ -49,6 +49,7 @@ contract Multicall3 {
             bool success;
             call = calls[i];
             (success, returnData[i]) = call.target.call(call.callData);
+            // 如果调用失败，则抛出异常
             require(success, "Multicall3: call failed");
             unchecked {
                 ++i;
@@ -67,15 +68,21 @@ contract Multicall3 {
     ) public payable returns (Result[] memory returnData) {
         uint256 length = calls.length;
         returnData = new Result[](length);
+        // 直接在这定义一个临时变量，减少索引查询
         Call calldata call;
         for (uint256 i = 0; i < length; ) {
+            // 初始化变量 存储执行结果 与返回值
             Result memory result = returnData[i];
+            // 赋值临时变量
             call = calls[i];
+            // 如果没有临时变量的话，这里calls[i].targetcall(calls[i].callData) 这里会消耗更多的gas因为3次索引查询
             (result.success, result.returnData) = call.target.call(
                 call.callData
             );
+            // call是不会自动回滚交易的
             if (requireSuccess)
                 require(result.success, "Multicall3: call failed");
+            // unchecked 块告诉编译器在这个块内不要进行溢出检查。
             unchecked {
                 ++i;
             }
@@ -88,6 +95,7 @@ contract Multicall3 {
     /// @return blockNumber 执行调用的区块号
     /// @return blockHash 执行调用的区块哈希
     /// @return returnData Result 结构体数组
+    // 返回数据多了blockNumber blockHash
     function tryBlockAndAggregate(
         bool requireSuccess,
         Call[] calldata calls
@@ -111,6 +119,7 @@ contract Multicall3 {
     /// @return blockNumber 执行调用的区块号
     /// @return blockHash 执行调用的区块哈希
     /// @return returnData Result 结构体数组
+    // 这里是函数重写为requireSuccess = true
     function blockAndAggregate(
         Call[] calldata calls
     )
@@ -131,6 +140,7 @@ contract Multicall3 {
     /// @notice 聚合调用，如果需要则确保每个调用都返回成功
     /// @param calls Call3 结构体数组
     /// @return returnData Result 结构体数组
+    // 这里的是否允许失败 是再接在Call3这个struct中的
     function aggregate3(
         Call3[] calldata calls
     ) public payable returns (Result[] memory returnData) {
@@ -183,6 +193,7 @@ contract Multicall3 {
     function aggregate3Value(
         Call3Value[] calldata calls
     ) public payable returns (Result[] memory returnData) {
+        //用于记录结构中记录的value总值
         uint256 valAccumulator;
         uint256 length = calls.length;
         returnData = new Result[](length);
@@ -231,6 +242,7 @@ contract Multicall3 {
             }
         }
         // 最后，确保 msg.value = SUM(call[0...i].value)
+        // 判断  valAccumulator总值 和 请求函数携带的值
         require(msg.value == valAccumulator, "Multicall3: value mismatch");
     }
 
